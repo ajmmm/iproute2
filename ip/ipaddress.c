@@ -1295,6 +1295,20 @@ int print_linkinfo(struct nlmsghdr *n, void *arg)
 				     "parentdev %s ",
 				     rta_getattr_str(tb[IFLA_PARENT_DEV_NAME]));
 		}
+
+		if (tb[IFLA_HEADROOM]) {
+			print_uint(PRINT_ANY,
+				     "headroom",
+				     "headroom %u ",
+				     rta_getattr_u16(tb[IFLA_HEADROOM]));
+		}
+
+		if (tb[IFLA_TAILROOM]) {
+			print_uint(PRINT_ANY,
+				     "tailroom",
+				     "tailroom %u ",
+				     rta_getattr_u16(tb[IFLA_TAILROOM]));
+		}
 	}
 
 	if ((do_link || show_details) && tb[IFLA_IFALIAS]) {
