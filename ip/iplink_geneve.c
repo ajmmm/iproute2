@@ -23,6 +23,7 @@ static void print_explain(FILE *f)
 		"		[ df DF ]\n"
 		"		[ flowlabel LABEL ]\n"
 		"		[ dstport PORT ]\n"
+		"		[ srcport MIN MAX ]\n"
 		"		[ [no]external ]\n"
 		"		[ [no]udpcsum ]\n"
 		"		[ [no]udp6zerocsumtx ]\n"
@@ -142,6 +143,22 @@ static int geneve_parse_opt(struct link_util *lu, int argc, char **argv,
 			    (uval & ~LABEL_MAX_MASK))
 				invarg("invalid flowlabel", *argv);
 			label = htonl(uval);
+		} else if (!matches(*argv, "port")
+			|| !matches(*argv, "srcport")) {
+			struct ifla_geneve_port_range range = { 0, 0 };
+
+			NEXT_ARG();
+			check_duparg(&attrs, IFLA_GENEVE_PORT_RANGE, "srcport",
+				     *argv);
+			if (get_be16(&range.low, *argv, 0))
+				invarg("min port", *argv);
+			NEXT_ARG();
+			if (get_be16(&range.high, *argv, 0))
+				invarg("max port", *argv);
+			if (range.low || range.high) {
+				addattr_l(n, 1024, IFLA_GENEVE_PORT_RANGE,
+					  &range, sizeof(range));
+			}
 		} else if (!matches(*argv, "dstport")) {
 			NEXT_ARG();
 			check_duparg(&attrs, IFLA_GENEVE_PORT, "dstport",
@@ -373,6 +390,19 @@ static void geneve_print_opt(struct link_util *lu, FILE *f, struct rtattr *tb[])
 	if (tb[IFLA_GENEVE_INNER_PROTO_INHERIT]) {
 		print_bool(PRINT_ANY, "inner_proto_inherit",
 			   "innerprotoinherit ", true);
+	}
+
+	if (tb[IFLA_GENEVE_PORT_RANGE]) {
+		const struct ifla_geneve_port_range *r
+			= RTA_DATA(tb[IFLA_GENEVE_PORT_RANGE]);
+		if (is_json_context()) {
+			open_json_object("port_range");
+			print_uint(PRINT_JSON, "low", NULL, ntohs(r->low));
+			print_uint(PRINT_JSON, "high", NULL, ntohs(r->high));
+			close_json_object();
+		} else {
+			fprintf(f, "srcport %u %u ", ntohs(r->low), ntohs(r->high));
+		}
 	}
 }
 

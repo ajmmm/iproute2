@@ -1408,6 +1408,8 @@ the following additional arguments are supported:
 ] [
 .BI dstport " PORT"
 ] [
+.BI srcport " MIN MAX "
+] [
 .RB [ no ] external
 ] [
 .RB [ no ] udpcsum
@@ -1457,6 +1459,11 @@ bit is not set.
 .sp
 .BI dstport " PORT"
 - select a destination port other than the default of 6081.
+
+.sp
+.BI srcport " MIN MAX"
+- specifies the range of port numbers to use as UDP
+source ports to communicate to the remote tunnel endpoint.
 
 .sp
 .RB [ no ] external
